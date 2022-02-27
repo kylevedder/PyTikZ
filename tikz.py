@@ -10,10 +10,17 @@ from functools import wraps
 __all__ = ['ra', 'Picture']
 
 # change this to use spaces instead of tabs
-TAB = '\t'
+TAB = '    '
+
 
 def ra(radius, angle_deg):
     return '%s:%s' % (angle_deg, radius)
+
+
+def tuple_to_complex(tpl):
+    assert len(tpl) == 2
+    return complex(tpl[0], tpl[1])
+
 
 def format_pos(pos, coord='abs'):
     if isinstance(pos, complex):
@@ -33,7 +40,9 @@ def format_pos(pos, coord='abs'):
 
     return coord_type + str(pos)
 
+
 def to_command(func):
+
     @wraps(func)
     def wrapped(*args, **kwargs):
         return func(*args, **kwargs)
@@ -41,6 +50,7 @@ def to_command(func):
     return wrapped
 
 class Path(object):
+
     def __init__(self, style=''):
         self.style = style
 
@@ -63,6 +73,9 @@ class Path(object):
 
         return self
 
+    def at_pt(self, pos, name='', coord='abs'):
+        return self.at(tuple_to_complex(pos), name, coord)
+
     def coord(self, style='', name=''):
         c = 'coordinate[%s] (%s)' % (style, name)
         self.add_command(c, to=False)
@@ -70,7 +83,7 @@ class Path(object):
         return self
 
     def line_to(self, pos, type='straight', name='', coord='abs'):
-        LINE_TYPES = {'straight':'--', 'hv':'-|', 'vh':'|-'}
+        LINE_TYPES = {'straight': '--', 'hv': '-|', 'vh': '|-'}
         c = '%s %s' % (LINE_TYPES[type], format_pos(pos, coord))
         self.add_command(c, to=True)
 
@@ -78,6 +91,9 @@ class Path(object):
             self.coord(name=name)
 
         return self
+
+    def line_to_pt(self, pos, type='straight', name='', coord='abs'):
+        return self.line_to(tuple_to_complex(pos), type, name, coord)
 
     def to(self, pos, style='', name='', coord='abs'):
         c = 'to[%s] %s' % (style, format_pos(pos, coord))
@@ -132,8 +148,12 @@ class Path(object):
 
         return self
 
+    def grid_to_pt(self, pos, coord='abs'):
+        return self.grid_to(tuple_to_complex(pos), coord)
+
     def cycle(self):
         self.line_to('cycle')
+        return self
 
     def make(self):
         # end current statement
@@ -141,7 +161,9 @@ class Path(object):
 
         return self.contents
 
+
 class Picture(object):
+
     def __init__(self, style=''):
         self.style = style
         self.contents = []
@@ -174,11 +196,13 @@ class Picture(object):
         self.add_command('\\end{scope}')
 
     def set_coord(self, pos, options='', name='', coord='abs'):
-        cmd = '\\coordinate[%s] (%s) at %s;' % (options, name, format_pos(pos, coord))
+        cmd = '\\coordinate[%s] (%s) at %s;' % (options, name,
+                                                format_pos(pos, coord))
         self.add_command(cmd)
 
     def set_node(self, pos, text='', options='', name='', coord='abs'):
-        cmd = '\\node[%s] (%s) at %s {%s};' % (options, name, format_pos(pos, coord), text)
+        cmd = '\\node[%s] (%s) at %s {%s};' % (options, name,
+                                               format_pos(pos, coord), text)
         self.add_command(cmd)
 
     def __setitem__(self, item, value):
@@ -194,12 +218,13 @@ class Picture(object):
 
         return c
 
+
 def main():
     pic = Picture()
 
     # define some internal TikZ coordinates
-    pic['pointA'] = 5 + 0j      # complex number for x-y coordinates
-    pic['pointB'] = '45:5'      # or string for any native TikZ format
+    pic['pointA'] = 5 + 0j  # complex number for x-y coordinates
+    pic['pointB'] = '45:5'  # or string for any native TikZ format
 
     # define a coordinate in Python
     pointC = 3 + 1j
