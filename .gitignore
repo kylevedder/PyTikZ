@@ -213,3 +213,12 @@ pip-log.txt
 
 #Mr Developer
 .mr.developer.cfg
+
+.vscode/
+*.tikz
+*.aux
+*.dvi
+*.fdb_latexmk
+*.fls
+*.pdf
+*.synctex.gz
